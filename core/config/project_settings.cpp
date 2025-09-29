@@ -662,9 +662,14 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 
 		// Attempt with exec_name.pck.
 		// (This is the usual case when distributing a Godot game.)
+
 		String exec_dir = exec_path.get_base_dir();
 		String exec_filename = exec_path.get_file();
+#if 0
 		String exec_basename = exec_filename.get_basename();
+#else
+		String exec_basename = "data000";
+#endif
 
 		// Based on the OS, it can be the exec path + '.pck' (Linux w/o extension, macOS in .app bundle)
 		// or the exec path's basename + '.pck' (Windows).

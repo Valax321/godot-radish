@@ -205,7 +205,7 @@ Error EditorExportPlatformPC::export_project_data(const Ref<EditorExportPreset> 
 	if (p_preset->get("binary_format/embed_pck")) {
 		pck_path = p_path;
 	} else {
-		pck_path = p_path.get_basename() + ".pck";
+		pck_path = "data000.pck";
 	}
 
 	Vector<SharedObject> so_files;
