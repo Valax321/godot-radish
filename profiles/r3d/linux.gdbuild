@@ -1,0 +1,40 @@
+{
+	"disabled_build_options": {
+		"brotli": false,
+		"disable_advanced_gui": true,
+		"disable_navigation_2d": true,
+		"disable_physics_2d": true,
+		"disable_xr": true,
+		"forward_mobile_renderer": false,
+		"graphite": false,
+		"module_camera_enabled": false,
+		"module_enet_enabled": false,
+		"module_fbx_enabled": false,
+		"module_gltf_enabled": false,
+		"module_godot_physics_3d_enabled": false,
+		"module_jpg_enabled": false,
+		"module_jsonrpc_enabled": false,
+		"module_lightmapper_rd_enabled": false,
+		"module_mbedtls_enabled": false,
+		"module_msdfgen_enabled": false,
+		"module_multiplayer_enabled": false,
+		"module_openxr_enabled": false,
+		"module_raycast_enabled": false,
+		"module_text_server_adv_enabled": false,
+		"module_text_server_fb_enabled": true,
+		"module_upnp_enabled": false,
+		"module_vhacd_enabled": false,
+		"module_webrtc_enabled": false,
+		"module_websocket_enabled": false,
+		"module_xatlas_unwrap_enabled": false,
+		"module_zip_enabled": false
+	},
+	"disabled_classes": [
+		"Node2D",
+		"Shape2D",
+		"SkeletonModification2D",
+		"SkeletonModificationStack2D",
+		"World2D"
+	],
+	"type": "build_profile"
+}
