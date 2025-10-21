@@ -33,6 +33,7 @@
 #include "logo_svg.gen.h"
 #include "run_icon_svg.gen.h"
 
+#include "core/io/file_access_pack.h"
 #include "core/io/image_loader.h"
 #include "core/io/plist.h"
 #include "core/string/translation.h"
@@ -1990,7 +1991,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			};
 		}
 
-		String pack_path = tmp_app_path_name + "/Contents/Resources/" + "data000" + ".pck";
+		String pack_path = tmp_app_path_name + "/Contents/Resources/" + PACK_DEFAULT_FILE_NAME + ".pck";
 		Vector<SharedObject> shared_objects;
 		err = save_pack(p_preset, p_debug, pack_path, &shared_objects);
 

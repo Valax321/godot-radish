@@ -665,11 +665,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 
 		String exec_dir = exec_path.get_base_dir();
 		String exec_filename = exec_path.get_file();
-#if 0
-		String exec_basename = exec_filename.get_basename();
-#else
-		String exec_basename = "data000";
-#endif
+		String exec_basename = PACK_DEFAULT_FILE_NAME;
 
 		// Based on the OS, it can be the exec path + '.pck' (Linux w/o extension, macOS in .app bundle)
 		// or the exec path's basename + '.pck' (Windows).

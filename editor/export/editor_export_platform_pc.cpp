@@ -31,6 +31,7 @@
 #include "editor_export_platform_pc.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/file_access_pack.h"
 #include "scene/resources/image_texture.h"
 
 void EditorExportPlatformPC::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
@@ -205,7 +206,8 @@ Error EditorExportPlatformPC::export_project_data(const Ref<EditorExportPreset> 
 	if (p_preset->get("binary_format/embed_pck")) {
 		pck_path = p_path;
 	} else {
-		pck_path = "data000.pck";
+		const String dir = p_path.get_base_dir();
+		pck_path = dir.path_join(PACK_DEFAULT_FILE_NAME ".pck");
 	}
 
 	Vector<SharedObject> so_files;
