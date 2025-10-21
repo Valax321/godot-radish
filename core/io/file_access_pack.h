@@ -45,7 +45,8 @@
 // The current packed file format version number.
 #define PACK_FORMAT_VERSION PACK_FORMAT_VERSION_V3
 
-#define PACK_DEFAULT_FILE_NAME "pak_base001"
+// The name of the exported game pck file. The engine will load this at startup.
+#define PACK_DEFAULT_FILE_NAME "pack_base_001"
 
 enum PackFlags {
 	PACK_DIR_ENCRYPTED = 1 << 0,
