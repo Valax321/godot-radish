@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="FMODManager" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Provides the FMOD Studio subsystem to the engine.
+	</brief_description>
+	<description>
+		Singleton for accessing FMOD Studio from the engine.
+		Most of these methods mirror what FMOD::Studio::System offers, but a bunch of stuff is automatically initialized on startup for you.
+	</description>
+	<tutorials></tutorials>
+	<methods>
+		<method name="load_bank">
+			<return type="bool"/>
+			<param index="0" name="path" type="String"/>
+			<description>
+				Loads an FMOD bank from the given path, relative to the project directory.
+				The banks must be loose on the native filesystem (e.g. not in a pack).
+			</description>
+		</method>
+	</methods>
+</class>
