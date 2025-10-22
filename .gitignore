@@ -74,6 +74,11 @@ st[A-Za-z0-9][A-Za-z0-9][A-Za-z0-9][A-Za-z0-9][A-Za-z0-9][A-Za-z0-9]
 !modules/fmod/**/*.dll
 !modules/fmod/**/*.so
 
+# Keep steamworks binaries
+!modules/godotsteam/sdk/**/*.lib
+!modules/godotsteam/sdk/**/*.dll
+!modules/godotsteam/sdk/**/*.so
+
 # Python development
 .venv
 venv
