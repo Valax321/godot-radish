@@ -1,0 +1,51 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+Import("env_modules")
+
+env_fmod = env_modules.Clone()
+
+module_path = Dir('.').srcnode().abspath
+
+fmod_lib = "fmod"
+fmodstudio_lib = "fmodstudio"
+
+# Use logging versions in the editor and in debug templates
+if env["target"] in ["editor", "template_debug"]:
+    fmod_lib += "L"
+    fmodstudio_lib += "L"
+
+env_fmod.Append(CPPPATH=["%s/api/core/inc/" % module_path, "%s/api/studio/inc/" % module_path])
+
+# Linux
+if env["platform"] == "linuxbsd":
+    env_fmod.Append(LIBS=["lib%s" % fmod_lib, "lib%s" % fmodstudio_lib])
+    if env["arch"] == "arm32":
+        env_fmod.Append(LIBPATH=["%s/api/core/lib/arm" % module_path, "%s/api/studio/lib/arm" % module_path]
+    elif env["arch"] == "arm64":
+        env_fmod.Append(LIBPATH=["%s/api/core/lib/arm64" % module_path, "%s/api/studio/lib/arm64" % module_path]
+    elif env["arch"] == "x86_32":
+        env_fmod.Append(LIBPATH=["%s/api/core/lib/x86" % module_path, "%s/api/studio/lib/x86" % module_path]
+    elif env["arch"] == "x86_64":
+        env_fmod.Append(LIBPATH=["%s/api/core/lib/x86_64" % module_path, "%s/api/studio/lib/x86_64" % module_path]
+
+# macOS
+elif env["platform"] == "macos":
+    env_fmod.Append(LIBS=["lib%s" % fmod_lib, "lib%s" % fmodstudio_lib])
+    env_fmod.Append(LIBPATH=["%s/api/core/lib/macos" % module_path, "%s/api/studio/lib/macos" % module_path]
+
+# Windows
+elif env["platform"] == "windows":
+    # TODO: mingw?
+    env_fmod.Append(LIBS=["%s_vc.lib" % fmod_lib, "%s_vc.lib" % fmodstudio_lib])
+    if env["arch"] == "x86_32":
+        env_fmod.Append(LIBPATH=["%s/api/core/lib/x86" % module_path, "%s/api/studio/lib/x86" % module_path]
+    elif env["arch"] == "x86_64":
+        env_fmod.Append(LIBPATH=["%s/api/core/lib/x86_64" % module_path, "%s/api/studio/lib/x86_64" % module_path]
+
+
+env_fmod.add_source_files(env.modules_sources, "*.cpp")
+if env.editor_build:
+    env_fmod.add_source_files(env.modules_sources, "editor/*.cpp")
+
