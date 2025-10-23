@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EventInstance" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="FMODEventInstance" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		Wraps an FMOD event instance.
 	</brief_description>
 	<description>
 		Provides access to an FMOD event instance, including properties, playback etc.
-		See: https://www.fmod.com/docs/2.03/api/studio-api-eventinstance.html
 	</description>
 	<tutorials>
+		<link title="FMOD Docs">https://www.fmod.com/docs/2.03/api/studio-api-eventinstance.html</link>
 	</tutorials>
 	<methods>
 		<method name="start">
@@ -19,6 +19,18 @@
 			<param index="0" name="stop_mode" type="int" enum="FMODManager.FMOD_STUDIO_STOP_MODE" />
 			<description>
 				Stops playback of the event instance.
+			</description>
+		</method>
+		<method name="get_paused">
+			<return type="bool"/>
+			<description>
+				Gets whether the event is paused.
+			</description>
+		</method>
+		<method name="set_paused">
+			<param index="0" name="paused" type="bool" />
+			<description>
+				Sets whether the event is paused.
 			</description>
 		</method>
 		<method name="get_volume">
@@ -69,6 +81,20 @@
 				Sets the rotation of the event instance.
 			</description>
 		</method>
+		<method name="set_transform_3d">
+			<param index="0" name="xform" type="Transform3D"/>
+			<param index="1" name="velocity" type="Vector3"/>
+			<description>
+				Sets all FMOD 3D attributes to the given 3D transform. This is much more efficient than calling the individual set methods.
+			</description>
+		</method>
+		<method name="set_transform_2d">
+			<param index="0" name="xform" type="Transform2D"/>
+			<param index="1" name="velocity" type="Vector2"/>
+			<description>
+				Sets all FMOD 3D attributes to the given 2D transform. This is much more efficient than calling the individual set methods.
+			</description>
+		</method>
 		<method name="get_parameters">
 			<return type="String[]"/>
 			<description>
@@ -95,6 +121,9 @@
 	<members>
 		<member name="volume" type="float" getter="get_volume" setter="set_volume">
 			The current playback volume of the event instance.
+		</member>
+		<member name="paused" type="bool" getter="get_paused" setter="set_paused">
+			The current pause state of the event instance.
 		</member>
 		<member name="position" type="Vector3" getter="get_position" setter="set_position">
 			The current position of the event instance.

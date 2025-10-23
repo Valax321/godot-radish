@@ -1,11 +1,13 @@
 #include "fmod_manager.h"
 #include "fmod_settings.h"
+#include "fmod_enums.h"
 
-#include "api/fmod_studio.hpp"
-#include "api/fmod_errors.h"
 #include "core/config/engine.h"
 #include "core/os/os.h"
 #include "scene/main/scene_tree.h"
+
+#include "api/fmod_studio.hpp"
+#include "api/fmod_errors.h"
 
 #define FMOD_SUCCESS(c) (check_result<false>((c), #c))
 #define FMOD_CHECKED(c) (check_result<true>((c), #c))
@@ -15,7 +17,7 @@ template<bool ShouldPrint>
 static bool check_result(const FMOD_RESULT result, const char* expr) {
 	if (result != FMOD_OK) {
 		if constexpr (ShouldPrint) {
-			ERR_PRINT(vformat("FMOD error: %s, %s", String(FMOD_ErrorString(result)), String(expr)));
+			ERR_PRINT(vformat("FMOD error: %s, \"%s\"", FMOD_ErrorString(result), expr));
 		}
 		return false;
 	}
@@ -32,6 +34,18 @@ F_CALL static FMOD_RESULT fmod_log_callback(FMOD_DEBUG_FLAGS flags, const char *
 	return FMOD_OK;
 }
 
+F_CALL static void* fmod_mem_alloc(const unsigned int size, FMOD_MEMORY_TYPE, const char*) {
+	return memalloc(size);
+}
+
+F_CALL static void* fmod_mem_realloc(void *ptr, const unsigned int size, FMOD_MEMORY_TYPE, const char*) {
+	return memrealloc(ptr, size);
+}
+
+F_CALL static void fmod_mem_free(void *ptr, FMOD_MEMORY_TYPE, const char*) {
+	memfree(ptr);
+}
+
 FMODManager* FMODManager::get_singleton() {
 	return singleton_instance;
 }
@@ -41,10 +55,6 @@ FMODManager::FMODManager() {
 }
 
 FMODManager::~FMODManager() {
-	for (const auto& kv : banks) {
-			kv.value->unload();
-	}
-
 	if (FMOD_IS_VALID) {
 		system->release();
 		system = nullptr;
@@ -54,7 +64,12 @@ FMODManager::~FMODManager() {
 }
 
 void FMODManager::init() {
-	FMOD::Debug_Initialize(FMOD_DEBUG_LEVEL_WARNING | FMOD_DEBUG_LEVEL_ERROR, FMOD_DEBUG_MODE_CALLBACK, &fmod_log_callback);
+	static bool callbacks_hooked = false;
+	if (!callbacks_hooked) {
+		FMOD::Debug_Initialize(FMOD_DEBUG_LEVEL_WARNING | FMOD_DEBUG_LEVEL_ERROR, FMOD_DEBUG_MODE_CALLBACK, &fmod_log_callback);
+		FMOD::Memory_Initialize(nullptr, 0, &fmod_mem_alloc, &fmod_mem_realloc, &fmod_mem_free);
+		callbacks_hooked = true;
+	}
 
 	if (!FMOD_CHECKED(FMOD::Studio::System::create(&system))) {
 		return;
@@ -73,6 +88,8 @@ void FMODManager::init() {
 		return;
 	}
 
+	print_line("FMOD initialized. maxchannels = %d", FMODProjectSettings::get_max_channels());
+
 	if (!Engine::get_singleton()->is_editor_hint()) {
 		for (const auto& bank : FMODProjectSettings::get_autoload_banks()) {
 			// We block for initial bank loads to ensure they're ready
@@ -86,6 +103,7 @@ void FMODManager::hook_process_signal() {
 	ERR_FAIL_NULL_MSG(scene_tree, "Scene tree needed to hook main loop");
 	scene_tree->connect("process_frame", callable_mp(this, &FMODManager::process_frame));
 	hooked_process_frame = true;
+	print_verbose("Hooked global process_frame signal");
 }
 
 void FMODManager::unhook_process_signal() {
@@ -95,6 +113,47 @@ void FMODManager::unhook_process_signal() {
 		scene_tree->disconnect("process_frame", callable_mp(this, &FMODManager::process_frame));
 		hooked_process_frame = false;
 	}
+}
+
+int32_t FMODManager::get_num_listeners() const {
+	if (!FMOD_IS_VALID) {
+		return 0;
+	}
+
+	int c{};
+	if (auto r = system->getNumListeners(&c); r != FMOD_OK) {
+		WARN_PRINT(vformat("Failed to get listener count: %s", FMOD_ErrorString(r)));
+	}
+
+	return c;
+}
+
+void FMODManager::set_num_listeners(int32_t p_num_listeners) {
+	if (!FMOD_IS_VALID) {
+		return;
+	}
+
+	ERR_FAIL_COND_MSG(p_num_listeners < 0, "Listener count must be >= 0");
+
+	if (const auto r = system->setNumListeners(p_num_listeners); r != FMOD_OK) {
+		WARN_PRINT(vformat("Failed to set listener count: %s", FMOD_ErrorString(r)));
+	}
+}
+
+int32_t FMODManager::get_allocated_memory() const {
+	int c, m;
+	if (FMOD_Memory_GetStats(&c, &m, false)) {
+		return c;
+	}
+	return 0;
+}
+
+int32_t FMODManager::get_max_allocated_memory() const {
+	int c, m;
+	if (FMOD_Memory_GetStats(&c, &m, false)) {
+		return m;
+	}
+	return 0;
 }
 
 void FMODManager::process_frame() {
@@ -123,11 +182,12 @@ bool FMODManager::load_bank(const StringName &p_name, bool non_blocking) {
 	const String bank_path = platform_path.path_join(vformat("%s.bank", p_name));
 
 	FMOD::Studio::Bank* out_bank{nullptr};
-	if (const FMOD_RESULT r = system->loadBankFile(bank_path.utf8().get_data(), non_blocking ? FMOD_STUDIO_LOAD_BANK_NONBLOCKING : FMOD_STUDIO_LOAD_BANK_NORMAL, &out_bank); r != FMOD_OK) {
-		WARN_PRINT(vformat("Failed to load FMOD bank \"%s\": %s", bank_path, String(FMOD_ErrorString(r))));
+	if (const auto r = system->loadBankFile(bank_path.utf8().get_data(), non_blocking ? FMOD_STUDIO_LOAD_BANK_NONBLOCKING : FMOD_STUDIO_LOAD_BANK_NORMAL, &out_bank); r != FMOD_OK) {
+		WARN_PRINT(vformat("Failed to load FMOD bank \"%s\": %s", bank_path, FMOD_ErrorString(r)));
 		return false;
 	}
 
+	print_verbose(vformat("Loaded fmod bank %s: %s", p_name, bank_path));
 	banks.insert(p_name, out_bank);
 	return true;
 }
@@ -148,6 +208,7 @@ bool FMODManager::unload_bank(const StringName &p_name) {
 	if (!FMOD_CHECKED(bank_itr->value->unload())) {
 		success = false;
 	}
+	print_verbose(vformat("Unloaded bank %s", p_name));
 	banks.remove(bank_itr);
 	return success;
 }
@@ -170,7 +231,15 @@ FMOD_STUDIO_LOADING_STATE FMODManager::get_bank_loading_state(const StringName &
 	return load_state;
 }
 
-Ref<EventInstance> FMODManager::create_instance(const String& path_or_guid) const {
+TypedArray<StringName> FMODManager::get_loaded_banks() const {
+	TypedArray<StringName> r{};
+	for (const auto& kv : banks) {
+		r.append(kv.key);
+	}
+	return r;
+}
+
+Ref<FMODEventInstance> FMODManager::create_instance(const String& path_or_guid) const {
 	if (!FMOD_IS_VALID) {
 		return nullptr;
 	}
@@ -185,17 +254,26 @@ Ref<EventInstance> FMODManager::create_instance(const String& path_or_guid) cons
 		return nullptr;
 	}
 
-	return EventInstance::create(instance);
+	return FMODEventInstance::create(instance);
 }
 
 void FMODManager::_bind_methods() {
+	ClassDB::bind_method("get_allocated_memory", &FMODManager::get_allocated_memory);
+	ClassDB::bind_method("get_max_allocated_memory", &FMODManager::get_max_allocated_memory);
+
+	ClassDB::bind_method("get_num_listeners", &FMODManager::get_num_listeners);
+	ClassDB::bind_method(D_METHOD("set_num_listeners", "listener_count"), &FMODManager::set_num_listeners);
+
 	ClassDB::bind_method(D_METHOD("load_bank", "name", "non_blocking"), &FMODManager::load_bank, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("unload_bank", "name"), &FMODManager::unload_bank);
 	ClassDB::bind_method(D_METHOD("get_bank_loading_state", "name"), &FMODManager::get_bank_loading_state);
+	ClassDB::bind_method("get_loaded_banks", &FMODManager::get_loaded_banks);
 
 	ClassDB::bind_method(D_METHOD("create_instance", "path"), &FMODManager::create_instance);
 
 	#pragma region One million enum
+
+	BIND_CONSTANT(FMOD_MAX_LISTENERS);
 
 	// Result
 	BIND_ENUM_CONSTANT(FMOD_OK);

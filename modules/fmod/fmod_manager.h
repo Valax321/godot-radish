@@ -7,6 +7,8 @@
 
 #include "fmod_enums.h"
 #include "event_instance.h"
+#include "listener.h"
+#include "fmod_gd_util.h"
 
 namespace FMOD::Studio {
 	class System;
@@ -24,17 +26,33 @@ public:
 	void hook_process_signal();
 	void unhook_process_signal();
 
+	[[nodiscard]] FMOD::Studio::System* get_system() const { return system; }
+
+#pragma region Listeners
+
+	DEFINE_GETTER_SETTER_PAIR(num_listeners, int32_t);
+
+#pragma endregion
+
+	#pragma region Memory
+
+	int32_t get_allocated_memory() const;
+	int32_t get_max_allocated_memory() const;
+
+	#pragma endregion
+
 	#pragma region Banks
 
 	bool load_bank(const StringName& p_name, bool non_blocking);
 	bool unload_bank(const StringName& p_name);
 	FMOD_STUDIO_LOADING_STATE get_bank_loading_state(const StringName& p_name) const;
+	TypedArray<StringName> get_loaded_banks() const;
 
 	#pragma endregion
 
 	#pragma region Events
 
-	Ref<EventInstance> create_instance(const String& path_or_guid) const;
+	Ref<FMODEventInstance> create_instance(const String& path_or_guid) const;
 
 	#pragma endregion
 

@@ -7,7 +7,9 @@
 		Singleton for accessing FMOD Studio from the engine.
 		Most of these methods mirror what FMOD::Studio::System offers, but a bunch of stuff is automatically initialized on startup for you.
 	</description>
-	<tutorials></tutorials>
+	<tutorials>
+		<link title="FMOD Docs">https://www.fmod.com/docs/2.03/api/studio-api-system.html</link>
+	</tutorials>
 	<methods>
 		<method name="load_bank">
 			<return type="bool"/>
@@ -41,6 +43,13 @@
 				Returns the current load state of the given bank.
 			</description>
 		</method>
+		<method name="get_loaded_banks">
+			<return type="StringName[]"/>
+			<description>
+				Gets an array of names of banks that are currently loaded.
+				This includes banks currently in the process of loading if non_blocking was set to true.
+			</description>
+		</method>
 		<method name="create_instance">
 			<return type="EventInstance"/>
 			<param index="0" name="path" type="String"/>
@@ -48,5 +57,34 @@
 				Creates a new event instance from the given FMOD event path.
 			</description>
 		</method>
+		<method name="get_allocated_memory">
+			<return type="int"/>
+			<description>
+				Gets the amount of memory currently allocated by FMOD, in bytes.
+			</description>
+		</method>
+		<method name="get_max_allocated_memory">
+			<return type="int"/>
+			<description>
+				Gets the maximum amount of memory ever allocated by FMOD, in bytes.
+			</description>
+		</method>
+		<method name="get_num_listeners">
+			<return type="int"/>
+			<description>
+				Gets the current number of listeners enabled in FMOD.
+			</description>
+		</method>
+		<method name="set_num_listeners">
+			<param index="0" name="num_listeners" type="int"/>
+			<description>
+				Sets the current number of listeners enabled in FMOD.
+			</description>
+		</method>
 	</methods>
+	<constants>
+		<constant name="FMOD_MAX_LISTENERS" value="8">
+			The maximum number of FMOD listeners that can exist.
+		</constant>
+	</constants>
 </class>

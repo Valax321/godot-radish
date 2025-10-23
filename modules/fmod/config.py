@@ -7,7 +7,9 @@ def configure(env):
 def get_doc_classes():
 	return [
 		"FMODManager",
-		"EventInstance"
+		"FMODEventInstance",
+		"FMODListener3D",
+		"FMODListener2D"
 	]
 
 def get_doc_path():

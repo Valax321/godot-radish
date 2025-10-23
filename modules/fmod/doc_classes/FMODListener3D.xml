@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="FMODListener3D" inherits="Node3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Wraps an FMOD listener for a 3D world.
+	</brief_description>
+	<description>
+		Provides access to an FMOD listener.
+	</description>
+	<tutorials>
+		<link title="FMOD Docs">https://www.fmod.com/docs/2.03/api/studio-api-system.html</link>
+	</tutorials>
+	<methods>
+		<method name="get_weight">
+			<return type="float"/>
+			<description>
+				Gets the normalized (0-1) listener weight.
+			</description>
+		</method>
+		<method name="set_weight">
+			<param index="0" name="weight" type="float"/>
+			<description>
+				Sets the normalized (0-1) listener weight.
+			</description>
+		</method>
+		<method name="get_id">
+			<return type="int"/>
+			<description>
+				Gets the ID for this listener.
+			</description>
+		</method>
+		<method name="set_id">
+			<param index="0" name="id" type="int"/>
+			<description>
+				Sets the ID for this listener. This method exists for editor compatibility only. Calling this at runtime may result in undefined behaviour.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="id" type="int" getter="get_id" setter="set_id">
+			The FMOD id for this listener.
+		</member>
+		<member name="weight" type="float" getter="get_weight" setter="set_weight">
+			The 0-1 normalized weight for this listener.
+		</member>
+	</members>
+</class>

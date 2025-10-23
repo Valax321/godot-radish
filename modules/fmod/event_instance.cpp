@@ -11,15 +11,15 @@
  * - Signals for timeline events
  */
 
-Ref<EventInstance> EventInstance::create(FMOD::Studio::EventInstance* event) {
+Ref<FMODEventInstance> FMODEventInstance::create(FMOD::Studio::EventInstance* event) {
 	DEV_ASSERT(event != nullptr);
 
-	Ref r = memnew(EventInstance);
+	Ref r = memnew(FMODEventInstance);
 	r->init(event);
 	return r;
 }
 
-EventInstance::~EventInstance() {
+FMODEventInstance::~FMODEventInstance() {
 	if (event_description != nullptr) {
 		event_description = nullptr;
 	}
@@ -30,7 +30,7 @@ EventInstance::~EventInstance() {
 	}
 }
 
-void EventInstance::init(FMOD::Studio::EventInstance *event) {
+void FMODEventInstance::init(FMOD::Studio::EventInstance *event) {
 	event_instance = event;
 	if (try_get_event_desc(&event_description)) {
 		int32_t cnt{0};
@@ -46,24 +46,39 @@ void EventInstance::init(FMOD::Studio::EventInstance *event) {
 	}
 }
 
-void EventInstance::start() {
+void FMODEventInstance::start() {
 	event_instance->start();
 }
 
-void EventInstance::stop(const FMOD_STUDIO_STOP_MODE stop_mode) {
+void FMODEventInstance::stop(const FMOD_STUDIO_STOP_MODE stop_mode) {
 	event_instance->stop(stop_mode);
 }
 
-FMOD_STUDIO_PLAYBACK_STATE EventInstance::get_playback_state() const {
+FMOD_STUDIO_PLAYBACK_STATE FMODEventInstance::get_playback_state() const {
 	FMOD_STUDIO_PLAYBACK_STATE s{};
 	if (const auto result = event_instance->getPlaybackState(&s); result != FMOD_OK) {
-		WARN_PRINT(vformat("Failed to get playback state: %s", String(FMOD_ErrorString(result))));
+		WARN_PRINT(vformat("Failed to get playback state: %s", FMOD_ErrorString(result)));
 		return FMOD_STUDIO_PLAYBACK_STOPPED;
 	}
 	return s;
 }
 
-FMOD_RESULT EventInstance::set_parameter(const String &name, const Variant &value, const bool ignore_seek_speed) {
+bool FMODEventInstance::get_paused() const {
+	bool p{};
+	if (const auto r = event_instance->getPaused(&p); r != FMOD_OK) {
+		WARN_PRINT(vformat("Failed to get paused state: %s", FMOD_ErrorString(r)));
+		return false;
+	}
+	return p;
+}
+
+void FMODEventInstance::set_paused(const bool p_paused) {
+	if (const auto r = event_instance->setPaused(p_paused); r != FMOD_OK) {
+		WARN_PRINT(vformat("Failed to set paused state: %s", FMOD_ErrorString(r)));
+	}
+}
+
+FMOD_RESULT FMODEventInstance::set_parameter(const String &name, const Variant &value, const bool ignore_seek_speed) {
 	switch (value.get_type()) {
 		case Variant::INT:
 		case Variant::FLOAT:
@@ -73,20 +88,20 @@ FMOD_RESULT EventInstance::set_parameter(const String &name, const Variant &valu
 	}
 }
 
-float EventInstance::get_parameter(const String &name) const {
+float FMODEventInstance::get_parameter(const String &name) const {
 	float v{};
 	if (const auto result = event_instance->getParameterByName(name.utf8().get_data(), &v); result != FMOD_OK) {
-		WARN_PRINT(vformat("Failed to get parameter value: %s", String(FMOD_ErrorString(result))));
+		WARN_PRINT(vformat("Failed to get parameter value: %s", FMOD_ErrorString(result)));
 		return 0;
 	}
 	return v;
 }
 
-const Vector<String>& EventInstance::get_parameters() const {
+const Vector<String>& FMODEventInstance::get_parameters() const {
 	return event_parameters;
 }
 
-Vector3 EventInstance::get_position() const {
+Vector3 FMODEventInstance::get_position() const {
 	FMOD_3D_ATTRIBUTES attr{};
 	if (!try_get_3d_attributes(&attr)) {
 		return Vector3(0, 0, 0);
@@ -94,7 +109,7 @@ Vector3 EventInstance::get_position() const {
 	return Vector3(attr.position.x, attr.position.y, attr.position.z);
 }
 
-void EventInstance::set_position(Vector3 p_position) {
+void FMODEventInstance::set_position(Vector3 p_position) {
 	FMOD_3D_ATTRIBUTES attr{};
 	if (!try_get_3d_attributes(&attr)) {
 		return;
@@ -106,7 +121,7 @@ void EventInstance::set_position(Vector3 p_position) {
 	try_set_3d_attributes(&attr);
 }
 
-Vector3 EventInstance::get_velocity() const {
+Vector3 FMODEventInstance::get_velocity() const {
 	FMOD_3D_ATTRIBUTES attr{};
 	if (!try_get_3d_attributes(&attr)) {
 		return Vector3(0, 0, 0);
@@ -115,7 +130,7 @@ Vector3 EventInstance::get_velocity() const {
 	return Vector3(attr.velocity.x, attr.velocity.y, attr.velocity.z);
 }
 
-void EventInstance::set_velocity(Vector3 p_velocity) {
+void FMODEventInstance::set_velocity(Vector3 p_velocity) {
 	FMOD_3D_ATTRIBUTES attr{};
 	if (!try_get_3d_attributes(&attr)) {
 		return;
@@ -127,10 +142,10 @@ void EventInstance::set_velocity(Vector3 p_velocity) {
 	try_set_3d_attributes(&attr);
 }
 
-Basis EventInstance::get_rotation() const {
+Basis FMODEventInstance::get_rotation() const {
 	FMOD_3D_ATTRIBUTES attr{};
 	if (!try_get_3d_attributes(&attr)) {
-		return Quaternion();
+		return Basis();
 	}
 
 	// TODO: verify math
@@ -141,7 +156,7 @@ Basis EventInstance::get_rotation() const {
 	return b;
 }
 
-void EventInstance::set_rotation(const Basis& p_rotation) {
+void FMODEventInstance::set_rotation(const Basis& p_rotation) {
 	FMOD_3D_ATTRIBUTES attr{};
 	if (!try_get_3d_attributes(&attr)) {
 		return;
@@ -155,66 +170,94 @@ void EventInstance::set_rotation(const Basis& p_rotation) {
 }
 
 
-float EventInstance::get_volume() const {
+float FMODEventInstance::get_volume() const {
 	float v{};
 	if (const auto result = event_instance->getVolume(&v); result != FMOD_OK) {
-		WARN_PRINT(vformat("Failed to get volume: %s", String(FMOD_ErrorString(result))));
+		WARN_PRINT(vformat("Failed to get volume: %s", FMOD_ErrorString(result)));
 		return 0;
 	}
 	return v;
 }
 
-void EventInstance::set_volume(const float p_volume) {
+void FMODEventInstance::set_volume(const float p_volume) {
 	if (const auto result = event_instance->setVolume(p_volume); result != FMOD_OK) {
-		WARN_PRINT(vformat("Failed to set volume: %s", String(FMOD_ErrorString(result))));
+		WARN_PRINT(vformat("Failed to set volume: %s", FMOD_ErrorString(result)));
 	}
 }
 
-bool EventInstance::try_get_3d_attributes(FMOD_3D_ATTRIBUTES *p_attr) const {
+void FMODEventInstance::set_transform_3d(const Transform3D &p_xform, Vector3 p_velocity) {
+	const auto pos = p_xform.origin;
+	const auto up = p_xform.basis.xform(Vector3(0, 1, 0));
+	const auto fwd = p_xform.basis.xform(Vector3(0, 0, -1));
+
+	FMOD_3D_ATTRIBUTES attr;
+	attr.position = { pos.x, pos.y, pos.z };
+	attr.velocity = { p_velocity.x, p_velocity.y, p_velocity.z };
+	attr.up = { up.x, up.y, up.z };
+	attr.forward = { fwd.x, fwd.y, fwd.z };
+	try_set_3d_attributes(&attr);
+}
+
+void FMODEventInstance::set_transform_2d(const Transform2D &p_xform, const Vector2 p_velocity) {
+	const auto pos = p_xform.get_origin();
+	const auto up = p_xform.basis_xform(Vector2(0, 1));
+	const auto fwd = p_xform.basis_xform(Vector2(0, 1));
+
+	FMOD_3D_ATTRIBUTES attr;
+	attr.position = { pos.x, pos.y, 0 };
+	attr.velocity = { p_velocity.x, p_velocity.y, 0};
+	attr.up = { up.x, up.y, 0};
+	attr.forward = { fwd.x, fwd.y, 0 };
+	try_set_3d_attributes(&attr);
+}
+
+bool FMODEventInstance::try_get_3d_attributes(FMOD_3D_ATTRIBUTES *p_attr) const {
 	if (const auto result = event_instance->get3DAttributes(p_attr); result != FMOD_OK) {
-		WARN_PRINT(vformat("Failed to get 3D attributes: %s", String(FMOD_ErrorString(result))));
+		WARN_PRINT(vformat("Failed to get 3D attributes: %s", FMOD_ErrorString(result)));
 		return false;
 	}
 	return true;
 }
 
-bool EventInstance::try_set_3d_attributes(const FMOD_3D_ATTRIBUTES *p_attr) {
+bool FMODEventInstance::try_set_3d_attributes(const FMOD_3D_ATTRIBUTES *p_attr) {
 	if (const auto result = event_instance->set3DAttributes(p_attr); result != FMOD_OK) {
-		WARN_PRINT(vformat("Failed to set 3D attributes: %s", String(FMOD_ErrorString(result))));
+		WARN_PRINT(vformat("Failed to set 3D attributes: %s", FMOD_ErrorString(result)));
 		return false;
 	}
 	return true;
 }
 
-bool EventInstance::try_get_event_desc(FMOD::Studio::EventDescription **p_desc) const {
+bool FMODEventInstance::try_get_event_desc(FMOD::Studio::EventDescription **p_desc) const {
 	if (const auto result = event_instance->getDescription(p_desc); result != FMOD_OK) {
-		WARN_PRINT(vformat("Failed to get event description: %s", String(FMOD_ErrorString(result))));
+		WARN_PRINT(vformat("Failed to get event description: %s", FMOD_ErrorString(result)));
 		return false;
 	}
 	return true;
 }
 
-#define BIND_GETTER_SETTER_PAIR(clazz, name) \
-	ClassDB::bind_method("get_"#name, &clazz::get_##name); \
-	ClassDB::bind_method(D_METHOD("set_"#name, #name), &clazz::set_##name); \
-
-void EventInstance::_bind_methods() {
+void FMODEventInstance::_bind_methods() {
 	// Playback
-	ClassDB::bind_method("start", &EventInstance::start);
-	ClassDB::bind_method(D_METHOD("stop", "stop_mode"), &EventInstance::stop, DEFVAL(FMOD_STUDIO_STOP_ALLOWFADEOUT));
+	ClassDB::bind_method("start", &FMODEventInstance::start);
+	ClassDB::bind_method(D_METHOD("stop", "stop_mode"), &FMODEventInstance::stop, DEFVAL(FMOD_STUDIO_STOP_ALLOWFADEOUT));
 
 	// Parameters
-	ClassDB::bind_method(D_METHOD("get_parameter", "name"), &EventInstance::get_parameter);
-	ClassDB::bind_method(D_METHOD("set_parameter", "name", "value", "ignore_seek_speed"), &EventInstance::set_parameter, DEFVAL(false));
-	ClassDB::bind_method("get_parameters", &EventInstance::get_parameters);
+	ClassDB::bind_method(D_METHOD("get_parameter", "name"), &FMODEventInstance::get_parameter);
+	ClassDB::bind_method(D_METHOD("set_parameter", "name", "value", "ignore_seek_speed"), &FMODEventInstance::set_parameter, DEFVAL(false));
+	ClassDB::bind_method("get_parameters", &FMODEventInstance::get_parameters);
 
-	BIND_GETTER_SETTER_PAIR(EventInstance, volume);
-	BIND_GETTER_SETTER_PAIR(EventInstance, position);
-	BIND_GETTER_SETTER_PAIR(EventInstance, velocity);
-	BIND_GETTER_SETTER_PAIR(EventInstance, rotation);
+	BIND_GETTER_SETTER_PAIR(FMODEventInstance, volume);
+	BIND_GETTER_SETTER_PAIR(FMODEventInstance, position);
+	BIND_GETTER_SETTER_PAIR(FMODEventInstance, velocity);
+	BIND_GETTER_SETTER_PAIR(FMODEventInstance, rotation);
+	BIND_GETTER_SETTER_PAIR(FMODEventInstance, paused);
 
+	ClassDB::bind_method(D_METHOD("set_transform_3d", "xform", "velocity"), &FMODEventInstance::set_transform_3d);
+	ClassDB::bind_method(D_METHOD("set_transform_2d", "xform", "velocity"), &FMODEventInstance::set_transform_2d);
+
+#if 0
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume"), "get_volume", "set_volume");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "position"), "get_position", "set_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "velocity"), "get_velocity", "set_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::BASIS, "rotation"), "get_rotation", "set_rotation");
+#endif
 }

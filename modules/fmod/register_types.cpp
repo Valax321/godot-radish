@@ -7,6 +7,7 @@
 #include "fmod_manager.h"
 #include "fmod_settings.h"
 #include "event_instance.h"
+#include "listener.h"
 
 #define FMOD_SINGLETON_NAME "FMOD"
 
@@ -15,7 +16,9 @@ static FMODManager* fmod_instance = nullptr;
 void initialize_fmod_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_CORE) {
 		GDREGISTER_CLASS(FMODManager);
-		GDREGISTER_CLASS(EventInstance);
+		GDREGISTER_CLASS(FMODEventInstance);
+		GDREGISTER_CLASS(FMODListener3D);
+		GDREGISTER_CLASS(FMODListener2D);
 
 		fmod_instance = memnew(FMODManager);
 		Engine::get_singleton()->add_singleton(Engine::Singleton(FMOD_SINGLETON_NAME, fmod_instance));

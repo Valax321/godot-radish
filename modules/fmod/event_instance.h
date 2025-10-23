@@ -3,32 +3,27 @@
 #include "core/object/ref_counted.h"
 
 #include "fmod_enums.h"
+#include "fmod_gd_util.h"
 
 namespace FMOD::Studio {
 	class EventInstance;
 	class EventDescription;
 }
 
-#define DEFINE_GETTER_SETTER_PAIR(name, type) \
-	type get_##name() const; \
-	void set_##name(type p_##name);
-
-#define DEFINE_GETTER_SETTER_PAIR_BYREF(name, type) \
-type get_##name() const; \
-void set_##name(const type& p_##name);
-
-class EventInstance final : public RefCounted {
-	GDCLASS(EventInstance, RefCounted);
+class FMODEventInstance final : public RefCounted {
+	GDCLASS(FMODEventInstance, RefCounted);
 
 public:
-	static Ref<EventInstance> create(FMOD::Studio::EventInstance* event);
-	~EventInstance() override;
+	static Ref<FMODEventInstance> create(FMOD::Studio::EventInstance* event);
+	~FMODEventInstance() override;
 
 	void init(FMOD::Studio::EventInstance* event);
 
 	void start();
 	void stop(FMOD_STUDIO_STOP_MODE stop_mode = FMOD_STUDIO_STOP_ALLOWFADEOUT);
 	FMOD_STUDIO_PLAYBACK_STATE get_playback_state() const;
+	DEFINE_GETTER_SETTER_PAIR(paused, bool);
+	DEFINE_GETTER_SETTER_PAIR(volume, float);
 
 	FMOD_RESULT set_parameter(const String& name, const Variant &value, bool ignore_seek_speed = false);
 	float get_parameter(const String& name) const;
@@ -38,7 +33,8 @@ public:
 	DEFINE_GETTER_SETTER_PAIR(position, Vector3);
 	DEFINE_GETTER_SETTER_PAIR(velocity, Vector3);
 	DEFINE_GETTER_SETTER_PAIR_BYREF(rotation, Basis);
-	DEFINE_GETTER_SETTER_PAIR(volume, float);
+	void set_transform_3d(const Transform3D& p_xform, Vector3 p_velocity);
+	void set_transform_2d(const Transform2D& p_xform, Vector2 p_velocity);
 
 private:
 	static auto _bind_methods() -> void;
