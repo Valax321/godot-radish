@@ -1,12 +1,12 @@
 #pragma once
 
 #include "core/object/object.h"
-#include "core/os/thread.h"
-#include "core/os/mutex.h"
-#include "core/templates/list.h"
 #include "core/variant/typed_dictionary.h"
 #include "core/variant/variant.h"
 #include "core/object/class_db.h"
+
+#include "fmod_enums.h"
+#include "event_instance.h"
 
 namespace FMOD::Studio {
 	class System;
@@ -16,20 +16,35 @@ namespace FMOD::Studio {
 class FMODManager final : public Object {
 	GDCLASS(FMODManager, Object);
 public:
-	static FMODManager* get_singleton() { return singleton_instance; }
+	static FMODManager* get_singleton();
 	FMODManager();
 	~FMODManager() override;
 
 	void init();
+	void hook_process_signal();
+	void unhook_process_signal();
 
-	bool load_bank(const String &p_path);
+	#pragma region Banks
 
-protected:
-	static void _bind_methods();
+	bool load_bank(const StringName& p_name, bool non_blocking);
+	bool unload_bank(const StringName& p_name);
+	FMOD_STUDIO_LOADING_STATE get_bank_loading_state(const StringName& p_name) const;
 
-	FMOD::Studio::System* system = nullptr;
+	#pragma endregion
+
+	#pragma region Events
+
+	Ref<EventInstance> create_instance(const String& path_or_guid) const;
+
+	#pragma endregion
 
 private:
+	static void _bind_methods();
+
+	void process_frame();
+
 	inline static FMODManager* singleton_instance;
-	HashMap<String, FMOD::Studio::Bank*> banks{};
+	FMOD::Studio::System* system = nullptr;
+	HashMap<StringName, FMOD::Studio::Bank*> banks{};
+	bool hooked_process_frame{false};
 };

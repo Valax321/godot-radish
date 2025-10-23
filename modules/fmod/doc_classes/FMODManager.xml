@@ -11,10 +11,41 @@
 	<methods>
 		<method name="load_bank">
 			<return type="bool"/>
-			<param index="0" name="path" type="String"/>
+			<param index="0" name="name" type="StringName"/>
+			<param index="1" name="non_blocking" type="bool"/>
 			<description>
 				Loads an FMOD bank from the given path, relative to the project directory.
 				The banks must be loose on the native filesystem (e.g. not in a pack).
+			</description>
+		</method>
+		<method name="unload_bank">
+			<return type="bool"/>
+			<param index="0" name="name" type="StringName"/>
+			<description>
+				Unloads an existing FMOD bank from the given path, relative to the project directory.
+				This must be the same bank name passed to load_bank as the string is used for caching.
+			</description>
+		</method>
+		<method name="is_bank_loaded">
+			<return type="bool"/>
+			<param index="0" name="name" type="StringName"/>
+			<description>
+				Returns true if the bank with the given name has fully loaded yet.
+				If load_bank was called with non_blocking as false then this function should always return true.
+			</description>
+		</method>
+		<method name="get_bank_loading_state">
+			<return type="FMOD_STUDIO_LOADING_STATE"/>
+			<param index="0" name="name" type="StringName"/>
+			<description>
+				Returns the current load state of the given bank.
+			</description>
+		</method>
+		<method name="create_instance">
+			<return type="EventInstance"/>
+			<param index="0" name="path" type="String"/>
+			<description>
+				Creates a new event instance from the given FMOD event path.
 			</description>
 		</method>
 	</methods>

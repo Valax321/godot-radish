@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EventInstance" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Wraps an FMOD event instance.
+	</brief_description>
+	<description>
+		Provides access to an FMOD event instance, including properties, playback etc.
+		See: https://www.fmod.com/docs/2.03/api/studio-api-eventinstance.html
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="start">
+			<description>
+				Starts playback of the event instance.
+			</description>
+		</method>
+		<method name="stop">
+			<param index="0" name="stop_mode" type="int" enum="FMODManager.FMOD_STUDIO_STOP_MODE" />
+			<description>
+				Stops playback of the event instance.
+			</description>
+		</method>
+		<method name="get_volume">
+			<return type="float"/>
+			<description>
+				Gets the playback volume.
+			</description>
+		</method>
+		<method name="set_volume">
+			<param index="0" name="volume" type="float"/>
+			<description>
+				Sets the playback volume.
+			</description>
+		</method>
+		<method name="get_position">
+			<return type="Vector3"/>
+			<description>
+				Gets the virtual position of the event instance.
+			</description>
+		</method>
+		<method name="set_position">
+			<param index="0" name="position" type="Vector3"/>
+			<description>
+				Sets the virtual position of the event instance.
+			</description>
+		</method>
+		<method name="get_velocity">
+			<return type="Vector3"/>
+			<description>
+				Gets the virtual velocity of the event instance.
+			</description>
+		</method>
+		<method name="set_velocity">
+			<param index="0" name="velocity" type="Vector3"/>
+			<description>
+				Sets the virtual velocity of the event instance.
+			</description>
+		</method>
+		<method name="get_rotation">
+			<return type="Basis"/>
+			<description>
+				Gets the rotation of the event instance.
+			</description>
+		</method>
+		<method name="set_rotation">
+			<param index="0" name="rotation" type="Basis"/>
+			<description>
+				Sets the rotation of the event instance.
+			</description>
+		</method>
+		<method name="get_parameters">
+			<return type="String[]"/>
+			<description>
+				Gets an array of all the parameter names this event has.
+			</description>
+		</method>
+		<method name="get_parameter">
+			<return type="float"/>
+			<param index="0" name="name" type="String"/>
+			<description>
+				Gets the current value of the given parameter. Returns 0 if not found.
+			</description>
+		</method>
+		<method name="set_parameter">
+			<return type="int" enum="FMODManager.FMOD_RESULT" />
+			<param index="0" name="name" type="String"/>
+			<param index="1" name="value" type="Variant"/>
+			<param index="2" name="ignore_seek_speed" type="bool" default="false"/>
+			<description>
+				Sets the named parameter to the given value. The value can be an integer, a float or a string corresponding to a valid label value.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="volume" type="float" getter="get_volume" setter="set_volume">
+			The current playback volume of the event instance.
+		</member>
+		<member name="position" type="Vector3" getter="get_position" setter="set_position">
+			The current position of the event instance.
+		</member>
+		<member name="velocity" type="Vector3" getter="get_velocity" setter="set_velocity">
+			The current velocity of the event instance.
+		</member>
+		<member name="rotation" type="Basis" getter="get_rotation" setter="set_rotation">
+			The current rotation of the event instance.
+		</member>
+	</members>
+</class>

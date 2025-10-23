@@ -7,6 +7,9 @@ class FMODProjectSettings {
 public:
 	static void register_settings();
 
-	static Vector<String> get_autoload_banks();
+	static Vector<StringName> get_autoload_banks();
+	static Vector<StringName> get_locales();
 	static int32_t get_max_channels();
+	static String get_banks_path();
+	static StringName get_platform_name();
 };

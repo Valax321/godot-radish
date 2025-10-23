@@ -7,6 +7,7 @@ def configure(env):
 def get_doc_classes():
 	return [
 		"FMODManager",
+		"EventInstance"
 	]
 
 def get_doc_path():
