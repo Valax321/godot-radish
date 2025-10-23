@@ -254,10 +254,9 @@ void FMODEventInstance::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_transform_3d", "xform", "velocity"), &FMODEventInstance::set_transform_3d);
 	ClassDB::bind_method(D_METHOD("set_transform_2d", "xform", "velocity"), &FMODEventInstance::set_transform_2d);
 
-#if 0
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume"), "get_volume", "set_volume");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "position"), "get_position", "set_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "velocity"), "get_velocity", "set_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::BASIS, "rotation"), "get_rotation", "set_rotation");
-#endif
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "paused"), "get_paused", "set_paused");
 }
