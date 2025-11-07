@@ -4,27 +4,40 @@ from SCons.Script import ARGUMENTS
 
 # Variables for configuration process
 _radishPlatform = ARGUMENTS.get("platform")
+_radishArch = ARGUMENTS.get("arch")
+
+# Graphics API support matrix
+_platformsWithVulkanSupport = ["windows", "linuxbsd", "android", "macos"]
+
+_platformsWithMetalSupport = ["macos", "ios"]
+_archWithMetalSupport = ["arm64"]
+
+_platformsWithD3D12Support = ["xbox"]
 
 # -----------------------------------------------------------------
 
 extra_suffix = "2dbase" # Set your game identifier here
 deprecated = "no"
 
-# Use vulkan on all platforms...
-# Assuming arm64-only macos builds (which might be fair enough since apple is killing intel support next year)
-d3d12 = "no" # Yes, even on windows
-if _radishPlatform == "macos" or _radishPlatform == "ios":
-    vulkan = "no"
-    metal = "yes"
-else:
+# Set graphics API defaults
+vulkan = "no"
+metal = "no"
+d3d12 = "no"
+opengl3 = "no"
+
+# Enable proper graphics APIs for platforms
+if _radishPlatform in _platformsWithVulkanSupport:
     vulkan = "yes"
+if _radishPlatform in _platformsWithMetalSupport:
+    metal = "yes" if _radishArch in _archWithMetalSupport else "no"
+if _radishPlatform in _platformsWithD3D12Support:
+    d3d12 = "yes"
 
 # Note: I'm assuming here the use of the mobile renderer for a 2D game.
 # You could disable the mobile renderer and rendering_device to just use the compat renderer (set opengl to yes then)
 forward_plus_renderer = "no"
 forward_mobile_renderer = "yes"
 rendering_device = "yes"
-opengl3 = "no"
 
 # Big global overrides (mostly turning off 3d components we don't use)
 disable_3d = "yes"
